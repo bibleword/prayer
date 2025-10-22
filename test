@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日圣经经文</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .verse {
+            font-size: 24px;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+        .reference {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .share, .prayer {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .share button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .share button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="title" class="title"></div>
+        <div id="verse" class="verse"></div>
+        <div id="reference" class="reference"></div>
+        <div id="share" class="share"></div>
+        <div id="prayer" class="prayer"></div>
+    </div>
+
+    <script>
+        // 占位经文数组，后续替换为实际内容
+        const verses = [
+            {
+                title: "标题1",
+                verse: "圣经经文1",
+                reference: "出处1 (如: 约翰福音 3:16)",
+                share: "分享此经文",
+                prayer: "祷告内容1"
+            },
+            {
+                title: "标题2",
+                verse: "圣经经文2",
+                reference: "出处2",
+                share: "分享此经文",
+                prayer: "祷告内容2"
+            },
+            {
+                title: "标题3",
+                verse: "圣经经文3",
+                reference: "出处3",
+                share: "分享此经文",
+                prayer: "祷告内容3"
+            },
+            {
+                title: "标题4",
+                verse: "圣经经文4",
+                reference: "出处4",
+                share: "分享此经文",
+                prayer: "祷告内容4"
+            },
+            {
+                title: "标题5",
+                verse: "圣经经文5",
+                reference: "出处5",
+                share: "分享此经文",
+                prayer: "祷告内容5"
+            },
+            {
+                title: "标题6",
+                verse: "圣经经文6",
+                reference: "出处6",
+                share: "分享此经文",
+                prayer: "祷告内容6"
+            },
+            {
+                title: "标题7",
+                verse: "圣经经文7",
+                reference: "出处7",
+                share: "分享此经文",
+                prayer: "祷告内容7"
+            },
+            {
+                title: "标题8",
+                verse: "圣经经文8",
+                reference: "出处8",
+                share: "分享此经文",
+                prayer: "祷告内容8"
+            },
+            {
+                title: "标题9",
+                verse: "圣经经文9",
+                reference: "出处9",
+                share: "分享此经文",
+                prayer: "祷告内容9"
+            },
+            {
+                title: "标题10",
+                verse: "圣经经文10",
+                reference: "出处10",
+                share: "分享此经文",
+                prayer: "祷告内容10"
+            }
+        ];
+
+        // 获取当前日期并计算索引（每天不同，经文循环每10天）
+        const today = new Date();
+        const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+        const index = dayOfYear % verses.length;
+        const selectedVerse = verses[index];
+
+        // 显示内容
+        document.getElementById('title').textContent = selectedVerse.title;
+        document.getElementById('verse').textContent = selectedVerse.verse;
+        document.getElementById('reference').textContent = selectedVerse.reference;
+
+        // 分享按钮
+        const shareDiv = document.getElementById('share');
+        shareDiv.innerHTML = '<button onclick="shareVerse()">分享</button>';
+
+        // 祷告内容
+        document.getElementById('prayer').textContent = '祷告: ' + selectedVerse.prayer;
+
+        // 分享函数（使用Web Share API，如果不支持则 fallback）
+        function shareVerse() {
+            const shareData = {
+                title: selectedVerse.title,
+                text: `${selectedVerse.verse} - ${selectedVerse.reference}`,
+                url: window.location.href
+            };
+            if (navigator.share) {
+                navigator.share(shareData)
+                    .then(() => console.log('分享成功'))
+                    .catch((error) => console.log('分享失败', error));
+            } else {
+                alert('您的浏览器不支持分享功能，请手动复制: ' + shareData.text);
+            }
+        }
+    </script>
+</body>
+</html>
