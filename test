@@ -1,178 +1,183 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>每日圣经经文</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            text-align: center;
-        }
-        .container {
-            max-width: 600px;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .title {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .verse {
-            font-size: 24px;
-            font-style: italic;
-            margin-bottom: 10px;
-        }
-        .reference {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        .share, .prayer {
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-        .share button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .share button:hover {
-            background-color: #0056b3;
-        }
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5; color: #333; }
+        .section { background: white; margin: 10px 0; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #4a90e2; }
+        h2 { color: #4a90e2; border-bottom: 2px solid #4a90e2; padding-bottom: 5px; }
+        .verse { font-size: 18px; line-height: 1.6; font-style: italic; }
+        .insights, .prayer { font-size: 16px; line-height: 1.5; }
     </style>
+    <script src="http://cdn.scripture.api.bible/fums/fumsv2.min.js"></script> <!-- API必备 -->
 </head>
 <body>
-    <div class="container">
-        <div id="title" class="title"></div>
-        <div id="verse" class="verse"></div>
-        <div id="reference" class="reference"></div>
-        <div id="share" class="share"></div>
-        <div id="prayer" class="prayer"></div>
+    <h1>今日圣经</h1>
+    
+    <div id="loading" style="text-align:center;">加载中...</div>
+    <div id="content" style="display:none;">
+        <div class="section">
+            <h2>标题</h2>
+            <div id="title" class="verse"></div>
+        </div>
+        
+        <div class="section">
+            <h2>经文</h2>
+            <div id="verse-content" class="verse"></div>
+        </div>
+        
+        <div class="section">
+            <h2>出处</h2>
+            <div id="verse-ref"></div>
+        </div>
+        
+        <div class="section">
+            <h2>分享心得</h2>
+            <div id="insights" class="insights"></div>
+        </div>
+        
+        <div class="section">
+            <h2>祷告</h2>
+            <div id="prayer" class="prayer"></div>
+        </div>
     </div>
 
     <script>
-        // 占位经文数组，后续替换为实际内容
-        const verses = [
-            {
-                title: "标题1",
-                verse: "圣经经文1",
-                reference: "出处1 (如: 约翰福音 3:16)",
-                share: "分享此经文",
-                prayer: "祷告内容1"
-            },
-            {
-                title: "标题2",
-                verse: "圣经经文2",
-                reference: "出处2",
-                share: "分享此经文",
-                prayer: "祷告内容2"
-            },
-            {
-                title: "标题3",
-                verse: "圣经经文3",
-                reference: "出处3",
-                share: "分享此经文",
-                prayer: "祷告内容3"
-            },
-            {
-                title: "标题4",
-                verse: "圣经经文4",
-                reference: "出处4",
-                share: "分享此经文",
-                prayer: "祷告内容4"
-            },
-            {
-                title: "标题5",
-                verse: "圣经经文5",
-                reference: "出处5",
-                share: "分享此经文",
-                prayer: "祷告内容5"
-            },
-            {
-                title: "标题6",
-                verse: "圣经经文6",
-                reference: "出处6",
-                share: "分享此经文",
-                prayer: "祷告内容6"
-            },
-            {
-                title: "标题7",
-                verse: "圣经经文7",
-                reference: "出处7",
-                share: "分享此经文",
-                prayer: "祷告内容7"
-            },
-            {
-                title: "标题8",
-                verse: "圣经经文8",
-                reference: "出处8",
-                share: "分享此经文",
-                prayer: "祷告内容8"
-            },
-            {
-                title: "标题9",
-                verse: "圣经经文9",
-                reference: "出处9",
-                share: "分享此经文",
-                prayer: "祷告内容9"
-            },
-            {
-                title: "标题10",
-                verse: "圣经经文10",
-                reference: "出处10",
-                share: "分享此经文",
-                prayer: "祷告内容10"
-            }
+        // 替换成你的API Key
+        const API_KEY = 'ApiKeyAuth'; // 如 'abc123def456'
+        
+        // 圣经版本ID（用和合本中文版，ID固定）
+        const BIBLE_ID = '7ea794434e9ea7ee-01'; // 和合本
+        
+        // 预设31节经文（覆盖每月日子），格式：书.章.节
+        const VERSES = [
+            'JER.29.11', 'PSA.23.1', 'PHP.4.13', 'JHN.3.16', 'ROM.8.28',
+            'ISA.41.10', 'PSA.46.1', 'GAL.5.22', 'HEB.11.1', '2TI.1.7',
+            '1COR.10.13', 'PRO.22.6', 'ISA.40.31', 'JOS.1.9', 'HEB.12.2',
+            'MAT.11.28', 'ROM.10.9', 'PHP.2.3', 'MAT.5.44', 'EPH.2.8',
+            '1PE.5.7', 'PRO.3.5', 'JAS.1.2', 'COL.3.23', '1TH.5.16',
+            'LUK.6.38', 'DEU.31.6', '1JN.4.8', 'MAR.12.30', 'ACT.1.8',
+            'REV.21.4' // 第31条
+        ];
+        
+        // 分享心得（31条，简单启发，你可自定义）
+        const INSIGHTS = [
+            '这节经文提醒我们，上帝有美好的计划，即使在困境中也要信靠。',
+            '主是我们的牧者，我们必不至缺乏。每天从祂开始新的一天。',
+            '在软弱时，靠主凡事都能做。你的力量来自祂。',
+            '上帝如此爱世人，赐下独生子。感恩这份永恒的爱。',
+            '万事都互相效力，叫爱神的人得益处。相信祂的安排。',
+            '不要害怕，因为我与你同在。祂的同在是最大的安慰。',
+            '神是我们的避难所，是我们的力量。风暴中祂是磐石。',
+            '圣灵的果子在生活中结出爱、喜乐与和平。',
+            '信心是未见之事的确据。步履前行，信靠所望。',
+            '神赐给我们刚强、仁爱、不惧怕的心。勇敢面对。',
+            '试探来临时，主必开出路。祂是信实的。',
+            '教养孩子是大事，从小引导他们走义路。',
+            '等候耶和华，必重新得力，如鹰展翅上腾。',
+            '你当刚强壮胆，耶和华与你同在。',
+            '仰望为我们信心创始成终的耶稣。',
+            '凡劳苦担重担的人，可以到我这里来，我就使你们得安息。',
+            '若口里认耶稣为主，心里信神叫祂从死里复活，就必得救。',
+            '存心谦卑，各人看别人比自己强。',
+            '爱你们的仇敌，为那逼迫你们的祷告。',
+            '你们得救是本乎恩，也因着信。这不是出乎自己，乃是神所赐的。',
+            '将一切的忧虑卸给神，因为祂顾念你们。',
+            '你要专心仰赖耶和华，不可倚靠自己的聪明。',
+            '我的弟兄们，你们落在百般试炼中，都要以为大喜乐。',
+            '无论做什么，都要从心里做，像是给主做的。',
+            '常常喜乐，不住地祷告，凡事谢恩。',
+            '给人，就必有给你们的。',
+            '你当刚强壮胆，不要害怕，也不要惊惶，因为你无论往哪里去，耶和华你的神必与你同在。',
+            '神就是爱。住在爱里面的，就住在神里面。',
+            '你要尽心、尽性、尽意爱主你的神。',
+            '但圣灵降临在你们身上，你们就必得着能力，并要在耶路撒冷、犹太全地，和撒玛利亚，直到地极，作我的见证。',
+            '神要擦去他们一切的眼泪。不再有死亡，也不再有悲哀、哭号、疼痛。'
+        ];
+        
+        // 祷告词（31条，简单祷告）
+        const PRAYERS = [
+            '主啊，感谢祢的计划，求祢带领我今日的脚步。阿们。',
+            '牧者耶稣，供应我一切所需，保守我的心灵。阿们。',
+            '赐我力量，主耶稣，帮助我胜过今日挑战。阿们。',
+            '感谢祢的爱，求祢让我更多经历这份恩典。阿们。',
+            '主，一切在祢手中，求祢使万事互相效力。阿们。',
+            '祢是我力量，驱散我的恐惧，赐下平安。阿们。',
+            '在祢里面得安息，求祢成为我的避难所。阿们。',
+            '结出圣灵果子，求祢塑造我的品格。阿们。',
+            '加添我的信心，求祢显明未见之事。阿们。',
+            '赐我刚强的心，不惧怕，靠祢前行。阿们。',
+            '在试探中保守我，开出路。阿们。',
+            '祝福我的家人，从小引导他们。阿们。',
+            '等候祢，求祢更新我的力量。阿们。',
+            '刚强壮胆，与我同在的主。阿们。',
+            '仰望祢，耶稣，成全我的信心。阿们。',
+            '劳苦担重担，来祢面前得安息。阿们。',
+            '口里认主，心里信靠，得救的恩典。阿们。',
+            '谦卑的心，看别人比自己强。阿们。',
+            '爱仇敌，为他们祷告，如祢所教。阿们。',
+            '本乎恩，因着信，感谢祢的救恩。阿们。',
+            '卸下忧虑，祢顾念我。阿们。',
+            '专心仰赖祢，不倚靠自己。阿们。',
+            '在试炼中喜乐，求祢加力。阿们。',
+            '从心里为主做事，求祢悦纳。阿门。',
+            '喜乐祷告谢恩，充满我心。阿们。',
+            '给人施舍，求祢丰丰富富地回赐。阿们。',
+            '刚强壮胆，祢与我同在。阿们。',
+            '住在爱里面，住在祢里面。阿们。',
+            '尽心爱祢，主我的神。阿们。',
+            '得着能力，作祢见证。阿们。',
+            '擦去眼泪，祢的新天新地。阿们。'
         ];
 
-        // 获取当前日期并计算索引（每天不同，经文循环每10天）
-        const today = new Date();
-        const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
-        const index = dayOfYear % verses.length;
-        const selectedVerse = verses[index];
+        // 获取今日索引（基于日期，1-31）
+        const today = new Date().getDate() % 31 || 31; // 确保1-31
+        const verseIndex = today - 1;
+        const verseID = VERSES[verseIndex];
+        const insight = INSIGHTS[verseIndex];
+        const prayer = PRAYERS[verseIndex];
 
-        // 显示内容
-        document.getElementById('title').textContent = selectedVerse.title;
-        document.getElementById('verse').textContent = selectedVerse.verse;
-        document.getElementById('reference').textContent = selectedVerse.reference;
+        // 显示心得和祷告（立即加载）
+        document.getElementById('insights').innerHTML = insight;
+        document.getElementById('prayer').innerHTML = prayer;
 
-        // 分享按钮
-        const shareDiv = document.getElementById('share');
-        shareDiv.innerHTML = '<button onclick="shareVerse()">分享</button>';
-
-        // 祷告内容
-        document.getElementById('prayer').textContent = '祷告: ' + selectedVerse.prayer;
-
-        // 分享函数（使用Web Share API，如果不支持则 fallback）
-        function shareVerse() {
-            const shareData = {
-                title: selectedVerse.title,
-                text: `${selectedVerse.verse} - ${selectedVerse.reference}`,
-                url: window.location.href
-            };
-            if (navigator.share) {
-                navigator.share(shareData)
-                    .then(() => console.log('分享成功'))
-                    .catch((error) => console.log('分享失败', error));
-            } else {
-                alert('您的浏览器不支持分享功能，请手动复制: ' + shareData.text);
-            }
+        // API调用函数
+        function getResults(verseID) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.withCredentials = false;
+                xhr.addEventListener('readystatechange', function () {
+                    if (this.readyState === this.DONE) {
+                        if (this.status === 200) {
+                            const { data, meta } = JSON.parse(this.responseText);
+                            _BAPI.t(meta.fumsId); // API追踪
+                            resolve(data);
+                        } else {
+                            reject('API错误');
+                        }
+                    }
+                });
+                xhr.open('GET', `https://api.scripture.api.bible/v1/bibles/${BIBLE_ID}/search?query=${verseID}`);
+                xhr.setRequestHeader('api-key', API_KEY);
+                xhr.onerror = () => reject('网络错误');
+                xhr.send();
+            });
         }
+
+        // 加载经文
+        getResults(verseID).then((data) => {
+            const passage = data.data.passages[0];
+            document.getElementById('title').innerHTML = passage.reference;
+            document.getElementById('verse-content').innerHTML = passage.content.replace(/\n/g, '<br>'); // 换行转BR
+            document.getElementById('verse-ref').innerHTML = `<i>${passage.reference} (和合本)</i>`;
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+        }).catch((err) => {
+            document.getElementById('loading').innerHTML = '加载失败，请检查网络或API Key。';
+        });
     </script>
 </body>
 </html>
